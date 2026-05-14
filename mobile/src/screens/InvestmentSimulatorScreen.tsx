@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactElement } from "react";
+import type { ReactElement } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -9,12 +9,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  computeYearlyReports,
-  parsePositiveNumber,
-  sanitizeNumericText,
-  type YearlyReport,
-} from "../domain/investmentSimulator";
+import { useInvestmentSimulation } from "../hooks/useInvestmentSimulation";
 
 const currency = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -27,25 +22,17 @@ function formatMoney(value: number): string {
 }
 
 export function InvestmentSimulatorScreen(): ReactElement {
-  const [principalText, setPrincipalText] = useState("");
-  const [rateText, setRateText] = useState("");
-  const [yearsText, setYearsText] = useState("");
-  const [rows, setRows] = useState<YearlyReport[]>([]);
-
-  const listEmpty = useMemo(() => rows.length === 0, [rows.length]);
-
-  const handleCalculate = (): void => {
-    const principal = parsePositiveNumber(principalText);
-    const annualRate = parsePositiveNumber(rateText);
-    const years = parsePositiveNumber(yearsText);
-
-    if (principal === null || annualRate === null || years === null) {
-      setRows([]);
-      return;
-    }
-
-    setRows(computeYearlyReports({ principal, annualRate, years }));
-  };
+  const {
+    principalText,
+    setPrincipalText,
+    annualRateText,
+    setAnnualRateText,
+    yearsText,
+    setYearsText,
+    yearlyReports,
+    isResultEmpty,
+    calculate,
+  } = useInvestmentSimulation();
 
   return (
     <SafeAreaView className="flex-1 bg-slate-950">
@@ -66,19 +53,19 @@ export function InvestmentSimulatorScreen(): ReactElement {
             <LabeledField
               label="Principal (USD)"
               value={principalText}
-              onChangeText={(t) => setPrincipalText(sanitizeNumericText(t))}
+              onChangeText={setPrincipalText}
               testID="input-principal"
             />
             <LabeledField
               label="Annual rate (%)"
-              value={rateText}
-              onChangeText={(t) => setRateText(sanitizeNumericText(t))}
+              value={annualRateText}
+              onChangeText={setAnnualRateText}
               testID="input-rate"
             />
             <LabeledField
               label="Years"
               value={yearsText}
-              onChangeText={(t) => setYearsText(sanitizeNumericText(t))}
+              onChangeText={setYearsText}
               testID="input-years"
             />
 
@@ -86,7 +73,7 @@ export function InvestmentSimulatorScreen(): ReactElement {
               accessibilityRole="button"
               accessibilityLabel="Calculate simulation"
               className="mt-2 items-center rounded-xl bg-emerald-500 py-3 active:bg-emerald-600"
-              onPress={handleCalculate}
+              onPress={calculate}
               testID="button-calculate"
             >
               <Text className="text-base font-semibold text-slate-950">
@@ -99,7 +86,7 @@ export function InvestmentSimulatorScreen(): ReactElement {
             Yearly breakdown
           </Text>
 
-          {listEmpty ? (
+          {isResultEmpty ? (
             <Text className="mt-2 text-sm text-slate-500" testID="empty-state">
               Enter values and tap Calculate to see each year's balance and
               interest.
@@ -107,7 +94,7 @@ export function InvestmentSimulatorScreen(): ReactElement {
           ) : (
             <FlatList
               className="mt-2 flex-1"
-              data={rows}
+              data={yearlyReports}
               keyExtractor={(item) => String(item.year)}
               renderItem={({ item }) => (
                 <View className="mb-2 rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-3">
@@ -165,6 +152,7 @@ function LabeledField({
         placeholderTextColor="#64748b"
         className="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-base text-slate-50"
         testID={testID}
+        accessibilityLabel={label}
       />
     </View>
   );

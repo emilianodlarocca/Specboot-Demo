@@ -7,7 +7,10 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],
-      include: ["src/domain/investmentSimulator.ts"],
+      include: [
+        "src/domain/investmentSimulator.ts",
+        "src/hooks/useInvestmentSimulation.ts",
+      ],
       thresholds: {
         lines: 90,
         functions: 90,
