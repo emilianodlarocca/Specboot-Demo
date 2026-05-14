@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "Investment Simulator",
+    "slug": "specboot-investment-simulator",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "investment-simulator",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.specboot.investmentsimulator"
+    },
+    "android": {
+      "package": "com.specboot.investmentsimulator"
+    }
+  }
+}
